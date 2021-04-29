@@ -48,3 +48,7 @@ struct ContentView: View {
   
 }
 ```
+
+# Credits
+
+Thanks to [@steipete](https://twitter.com/steipete) for the original idea, available at [SwiftUI in Production](https://pspdfkit.com/blog/2021/swiftui-in-production/#presenting-popovers-on-iphone).
