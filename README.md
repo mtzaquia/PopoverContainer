@@ -27,13 +27,13 @@ struct ContentView: View {
 			...
 			
 			.navigationBarItems(trailing:
-									Button(action: {
-										presentingSecondPopover.toggle()
-									}) {
-										Label("Second popover", systemImage: "ellipsis")
-											.labelStyle(IconOnlyLabelStyle())
-									}
-									.popoverAnchor(named: "second")
+			  Button(action: {
+				  presentingSecondPopover.toggle()
+				}) {
+				  Label("Second popover", systemImage: "ellipsis")
+					  .labelStyle(IconOnlyLabelStyle())
+					}
+					.popoverAnchor(named: "second")
 			)
 		}
 		.popoverContainer(isPresented: $presentingFirstPopover, anchorName: "first") {
@@ -43,8 +43,8 @@ struct ContentView: View {
 			Text("Second popover is here!")
 		}
 	}
-	
-	...
-	
+  
+  ...
+  
 }
 ```
