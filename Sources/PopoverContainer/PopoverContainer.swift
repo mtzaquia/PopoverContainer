@@ -47,7 +47,7 @@ struct PopoverContainerModifier<Popover>: ViewModifier where Popover: View {
 	@ViewBuilder
 	var background: some View {
 		if isPresented {
-			SwiftUI.Color.clear.frame(width: 0.01, height: 0.01).onAppear {
+			SwiftUI.Color.clear.onAppear {
 				if let view = anchors[anchorName],
 				   let presenting = view.nearestViewController
 				{
