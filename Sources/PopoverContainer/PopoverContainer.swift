@@ -33,6 +33,7 @@ struct PopoverAnchorNameKey: PreferenceKey {
 
 struct PopoverContainerModifier<Popover>: ViewModifier where Popover: View {
 	@State var anchors = [String: UIView]()
+	@State private var presentingViewController: UIViewController?
 	@Binding var isPresented: Bool
 	let anchorName: String
 	let popoverContent: () -> Popover
@@ -46,10 +47,12 @@ struct PopoverContainerModifier<Popover>: ViewModifier where Popover: View {
 	@ViewBuilder
 	var background: some View {
 		if isPresented {
-			SwiftUI.Color.clear.onAppear {
+			SwiftUI.Color.clear.frame(width: 0.01, height: 0.01).onAppear {
 				if let view = anchors[anchorName],
 				   let presenting = view.nearestViewController
 				{
+					self.presentingViewController = presenting
+
 					let presented = PopoverHostingController(rootView: popoverContent())
 					presented.modalPresentationStyle = .popover
 					presented.popoverPresentationController?.delegate = presented
@@ -62,6 +65,10 @@ struct PopoverContainerModifier<Popover>: ViewModifier where Popover: View {
 
 					presenting.present(presented, animated: true)
 				}
+			}
+		} else {
+			SwiftUI.Color.clear.frame(width: 0.01, height: 0.01).onAppear {
+				presentingViewController?.dismiss(animated: true)
 			}
 		}
 	}
