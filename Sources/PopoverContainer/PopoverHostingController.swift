@@ -32,7 +32,12 @@ class PopoverHostingController<Content>: UIHostingController<Content>, UIPopover
 		.none
 	}
 
-	func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
+	/* A simple hack for dismissal when tapping outside the popover. Since the system already dismisses and
+		we also check for the state and trigger a dismiss based on that, we say no to the system but immediately
+		dismiss the view as expected.
+	*/
+	func presentationControllerShouldDismiss(_ presentationController: UIPresentationController) -> Bool {
 		isPresented?.wrappedValue = false
+		return false
 	}
 }
