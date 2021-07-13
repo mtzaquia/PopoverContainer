@@ -1,11 +1,10 @@
 //
 //  PopoverContainer.swift
-//  PopoverContainer
 //
-//  Copyright © 2021 @mtzaquia
+//  Copyright (c) 2021 @mtzaquia
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
-//  of this software and associated documentation files (the &quot;Software&quot;), to deal
+//  of this software and associated documentation files (the "Software"), to deal
 //  in the Software without restriction, including without limitation the rights
 //  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 //  copies of the Software, and to permit persons to whom the Software is
@@ -14,15 +13,17 @@
 //  The above copyright notice and this permission notice shall be included in all
 //  copies or substantial portions of the Software.
 //
-//  THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 //  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 //  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 //  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
+//
 
 import SwiftUI
+import UIKitPresentationModifier
 
 struct PopoverAnchorNameKey: PreferenceKey {
 	static var defaultValue: [String: UIView] = [:]
@@ -33,7 +34,6 @@ struct PopoverAnchorNameKey: PreferenceKey {
 
 struct PopoverContainerModifier<Popover>: ViewModifier where Popover: View {
 	@State var anchors = [String: UIView]()
-	@State private var presentingViewController: UIViewController?
 	@Binding var isPresented: Bool
 	let anchorName: String
 	let popoverContent: () -> Popover
@@ -41,36 +41,18 @@ struct PopoverContainerModifier<Popover>: ViewModifier where Popover: View {
 	func body(content: Content) -> some View {
 		content
 			.onPreferenceChange(PopoverAnchorNameKey.self) { anchors = $0 }
-			.background(background)
-	}
+            .presentation(isPresented: $isPresented, content: popoverContent) { content in
+                let presented = PopoverHostingController(rootView: content)
+                presented.modalPresentationStyle = .popover
+                presented.popoverPresentationController?.delegate = presented
 
-	@ViewBuilder
-	var background: some View {
-		if isPresented {
-			SwiftUI.Color.clear.onAppear {
-				if let view = anchors[anchorName],
-				   let presenting = view.nearestViewController
-				{
-					self.presentingViewController = presenting
+                if let view = anchors[anchorName] {
+                    presented.popoverPresentationController?.sourceView = view
+                }
 
-					let presented = PopoverHostingController(rootView: popoverContent())
-					presented.modalPresentationStyle = .popover
-					presented.popoverPresentationController?.delegate = presented
-					presented.isPresented = $isPresented
+                return presented
+            }
 
-					let convertedFrame = presenting.view.convert(view.frame, from: view)
-
-					presented.popoverPresentationController?.sourceView = presenting.view
-					presented.popoverPresentationController?.sourceRect = convertedFrame
-
-					presenting.present(presented, animated: true)
-				}
-			}
-		} else {
-			SwiftUI.Color.clear.frame(width: 0.01, height: 0.01).onAppear {
-				presentingViewController?.dismiss(animated: true)
-			}
-		}
 	}
 }
 
@@ -78,8 +60,8 @@ public extension View {
 	/// **[PopoverContainer]** Declares an anchor to be used as a guide for presenting a popover.
 	/// - Parameter name: The name of the anchor for the popover to originate from.
 	func popoverAnchor(named name: String) -> some View {
-		AnchorView { anchor in
-			self.preference(key: PopoverAnchorNameKey.self, value: [name: anchor.uiView])
+		BridgeView { proxy in
+			self.preference(key: PopoverAnchorNameKey.self, value: [name: proxy.uiView])
 		}
 	}
 
