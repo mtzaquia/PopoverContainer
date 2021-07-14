@@ -26,6 +26,6 @@ import SwiftUI
 
 class PopoverHostingController<Content>: UIHostingController<Content>, UIPopoverPresentationControllerDelegate where Content: View {
 	func adaptivePresentationStyle(for controller: UIPresentationController) -> UIModalPresentationStyle {
-		.none
+		UIModalPresentationStyle.none
 	}
 }

@@ -26,32 +26,32 @@ import SwiftUI
 import UIKitPresentationModifier
 
 struct PopoverAnchorNameKey: PreferenceKey {
-	static var defaultValue: [String: UIView] = [:]
-	static func reduce(value: inout [String: UIView], nextValue: () -> [String: UIView]) {
+	static var defaultValue: [AnyHashable: UIView] = [:]
+	static func reduce<Name>(value: inout [Name: UIView], nextValue: () -> [Name: UIView]) where Name: Hashable {
 		value = value.merging(nextValue()) { $1 }
 	}
 }
 
 struct PopoverContainerModifier<Popover>: ViewModifier where Popover: View {
-	@State var anchors = [String: UIView]()
+	@State var anchors = [AnyHashable: UIView]()
 	@Binding var isPresented: Bool
-	let anchorName: String
+	let anchorName: AnyHashable
 	let popoverContent: () -> Popover
 
 	func body(content: Content) -> some View {
 		content
 			.onPreferenceChange(PopoverAnchorNameKey.self) { anchors = $0 }
-            .presentation(isPresented: $isPresented, content: popoverContent) { content in
-                let presented = PopoverHostingController(rootView: content)
-                presented.modalPresentationStyle = .popover
-                presented.popoverPresentationController?.delegate = presented
+			.presentation(isPresented: $isPresented, content: popoverContent) { content in
+				let presented = PopoverHostingController(rootView: content)
+				presented.modalPresentationStyle = .popover
+				presented.popoverPresentationController?.delegate = presented
 
-                if let view = anchors[anchorName] {
-                    presented.popoverPresentationController?.sourceView = view
-                }
+				if let view = anchors[anchorName] {
+					presented.popoverPresentationController?.sourceView = view
+				}
 
-                return presented
-            }
+				return presented
+			}
 
 	}
 }
@@ -59,7 +59,7 @@ struct PopoverContainerModifier<Popover>: ViewModifier where Popover: View {
 public extension View {
 	/// **[PopoverContainer]** Declares an anchor to be used as a guide for presenting a popover.
 	/// - Parameter name: The name of the anchor for the popover to originate from.
-	func popoverAnchor(named name: String) -> some View {
+	func popoverAnchor<Name>(named name: Name) -> some View where Name: Hashable {
 		BridgeView { proxy in
 			self.preference(key: PopoverAnchorNameKey.self, value: [name: proxy.uiView])
 		}
@@ -70,9 +70,9 @@ public extension View {
 	///   - isPresented: A binding to the presentation. The popover will automatically reset this flag when dismissed.
 	///   - anchorName: The name linking this popover to a previously-specified anchor in the hierarchy.
 	///   - content: The content to be displayed inside the popover.
-	func popoverContainer<Content>(isPresented: Binding<Bool>,
-								   anchorName: String,
-								   content: @escaping () -> Content) -> some View where Content: View
+	func popoverContainer<Name, Content>(isPresented: Binding<Bool>,
+										 anchorName: Name,
+										 content: @escaping () -> Content) -> some View where Name: Hashable, Content: View
 	{
 		modifier(PopoverContainerModifier(isPresented: isPresented, anchorName: anchorName, popoverContent: content))
 	}
