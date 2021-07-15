@@ -1,4 +1,4 @@
-// swift-tools-version:5.5
+// swift-tools-version:5.3
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -14,7 +14,7 @@ let package = Package(
             targets: ["PopoverContainer"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/mtzaquia/UIKitPresentationModifier.git", branch: "main")
+		.package(url: "https://github.com/mtzaquia/UIKitPresentationModifier.git", .branch("main"))
     ],
     targets: [
         .target(
