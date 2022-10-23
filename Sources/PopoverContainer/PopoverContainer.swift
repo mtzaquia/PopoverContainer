@@ -28,7 +28,7 @@ import UIKitPresentationModifier
 struct PopoverAnchorNameKey: PreferenceKey {
 	static var defaultValue: [AnyHashable: UIView] = [:]
 	static func reduce<Name>(value: inout [Name: UIView], nextValue: () -> [Name: UIView]) where Name: Hashable {
-		value = value.merging(nextValue()) { $1 }
+		value.merge(nextValue()) { $1 }
 	}
 }
 
@@ -40,7 +40,9 @@ struct PopoverContainerModifier<Popover>: ViewModifier where Popover: View {
 
 	func body(content: Content) -> some View {
 		content
-			.onPreferenceChange(PopoverAnchorNameKey.self) { anchors = $0 }
+			.onPreferenceChange(PopoverAnchorNameKey.self) {
+                anchors.merge($0) { $1 }
+            }
 			.presentation(isPresented: $isPresented, content: popoverContent) { content in
 				let presented = PopoverHostingController(rootView: content)
 				presented.modalPresentationStyle = .popover
@@ -48,7 +50,7 @@ struct PopoverContainerModifier<Popover>: ViewModifier where Popover: View {
 
 				if let view = anchors[anchorName] {
 					presented.popoverPresentationController?.sourceView = view
-				}
+                }
 
 				return presented
 			}
